@@ -1,60 +1,50 @@
-// import 'dart:convert';
-// import 'dart:developer';
+import 'dart:developer';
+import 'package:dio/dio.dart';
+import 'package:wether_app/constants/api_endpoint.dart';
+import 'package:wether_app/constants/api_key.dart';
+import 'package:wether_app/core/dio/dio_client.dart';
+import 'package:wether_app/logic/models/location_model.dart';
+import 'package:wether_app/logic/models/weather_model.dart';
 
-// import "package:http/http.dart" as http;
-
-
-// class CallToApi {
-//   Future<WeatherModel> callWeatherAPi(bool current, String cityName) async {
-//     try {
-//       Position currentPosition = await getCurrentPosition();
-  
-//       if (current) {
-//         List<Placemark> placemarks = await placemarkFromCoordinates(
-//             currentPosition.latitude, currentPosition.longitude);
-
-//         Placemark place = placemarks[0];
-//         cityName = place.locality!;
-//       }
-
-//       var url = Uri.https('api.openweathermap.org', '/data/2.5/weather',
-//           {'q': cityName, "units": "metric", "appid": apiKey});
-//       final http.Response response = await http.get(url);
-//       log(response.body.toString());
-//       if (response.statusCode == 200) {
-//         final Map<String, dynamic> decodedJson = json.decode(response.body);
-//         return WeatherModel.fromMap(decodedJson);
-//       } else {
-//         throw Exception('Failed to load weather data');
-//       }
-//     } catch (e) {
-//       throw Exception('Failed to load weather data');
-//     }
-//   }
-
-//   Future<Position> getCurrentPosition() async {
-//     bool serviceEnabled;
-//     LocationPermission permission;
-//     serviceEnabled = await Geolocator.isLocationServiceEnabled();
-//     if (!serviceEnabled) {
-//       return Future.error('Location services are disabled.');
-//     }
-//     permission = await Geolocator.checkPermission();
-//     if (permission == LocationPermission.denied) {
-//       permission = await Geolocator.requestPermission();
-//       if (permission == LocationPermission.denied) {
-
-//         return Future.error('Location permissions are denied');
-//       }
-//     }
-
-//     if (permission == LocationPermission.deniedForever) {
-//       return Future.error(
-//           'Location permissions are permanently denied, we cannot request permissions.');
-//     }
-
-//     return await Geolocator.getCurrentPosition(
-//       desiredAccuracy: LocationAccuracy.best,
-//     );
-//   }
-// }
+class CallToApi {
+Future getlocation(context,city) async {
+ try {
+      var response = await dio.get(locationEndpoint, queryParameters:{
+        "q":city,
+        "appid": apiKey});
+      if (response.statusCode == 200) {
+        final result =  List<Map<String, dynamic>>.from(response.data);
+        final data = result.map((e) => LocationModel.fromJson(e)).toList();
+        return data;
+      } else {
+        return null;
+      }
+    } on DioError catch (e) {
+      log(e.message.toString());
+    } catch (e) {
+      log(e.toString());
+    }
+    
+  }
+  Future getWetherForecast(context,lat,lon) async {
+ try {
+      var response = await dio.get(wetherEndpoint, queryParameters:{
+        "lat":lat,
+        "lon":lon,
+        "appid": apiKey});
+      if (response.statusCode == 200) {
+        final data  = WetherModel.fromJson(response.data);
+        // final result =  List<Map<String, dynamic>>.from(response.data);
+        // final data = result.map((e) => LocationModel.fromJson(e)).toList();
+        return data;
+      } else {
+        return null;
+      }
+    } on DioError catch (e) {
+      log(e.message.toString());
+    } catch (e) {
+      log(e.toString());
+    }
+    
+  }
+}

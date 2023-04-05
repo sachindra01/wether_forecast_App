@@ -1,113 +1,170 @@
-import 'dart:developer';
-import 'package:anim_search_bar/anim_search_bar.dart';
 import 'package:flutter/material.dart';
-import 'package:wether_app/constants/constants.dart';
-import 'package:wether_app/logic/models/weather_model.dart';
+import 'package:provider/provider.dart';
+import 'package:shimmer/shimmer.dart';
+import 'package:wether_app/providers/location_provider.dart';
+import 'package:wether_app/providers/wether_provider.dart';
 
+class LocationPage extends StatelessWidget {
+  
+   LocationPage({super.key});
 
-class WeatherPage extends StatefulWidget {
-  const WeatherPage({Key? key}) : super(key: key);
+ final TextEditingController _controller = TextEditingController();
 
-  @override
-  State<WeatherPage> createState() => _WeatherPageState();
-}
-
-class _WeatherPageState extends State<WeatherPage> {
-
-
-  TextEditingController textController = TextEditingController(text: "");
- 
-  @override
-  void initState() {
-    setState(() {
-      
-    });
-
-    super.initState();
-  }
+  
 
   @override
   Widget build(BuildContext context) {
+     final location = Provider.of<LocationProvider>(context);
+     final wether = Provider.of<WetherProvider>(context);
     return Scaffold(
-      resizeToAvoidBottomInset: false,
-      backgroundColor: Colors.white,
-      body: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment(0.8, 1),
-            colors: <Color>[
-              Color.fromARGB(255, 65, 89, 224),
-              Color.fromARGB(255, 83, 92, 215),
-              Color.fromARGB(255, 86, 88, 177),
-              Color(0xfff39060),
-              Color(0xffffb56b),
-            ],
-            tileMode: TileMode.mirror,
-          ),
-        ),
-        width: double.infinity,
-        height: double.infinity,
-        child: SafeArea(
-          child: Column(
-            children: [
-              AnimSearchBar(
-                rtl: true,
-                width: 400,
-                color: const Color(0xffffb56b),
-                textController: textController,
-                suffixIcon: const Icon(
-                  Icons.search,
-                  color: Colors.black,
-                  size: 26,
+      appBar: AppBar(
+        centerTitle: true,
+        backgroundColor: Colors.black,
+        title: const Text('Wether App'),
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            color: Colors.blue,
+              padding:const EdgeInsets.only(top:20,right:10,left:10),
+              child:Card(
+                shape:RoundedRectangleBorder(
+                  borderRadius:BorderRadius.circular(20),
                 ),
-                onSuffixTap: () async {
-                  textController.text == ""
-                      ? log("No city entered")
-                      : setState(() {
-                          // _myData = getData(false, textController.text);
-                        });
+              color:Colors.white,
+              child: Container(
+                padding:const EdgeInsets.only(left:12),
+                child: TextFormField(
+                  autofocus: false,
+                  controller: _controller,
+                  onChanged: ((value) {
+                    if(_controller.text.trim().length>3){
+                      location.getLocationData(context, value.trim().toString());
 
-                  FocusScope.of(context).unfocus();
-                  textController.clear();
-                },
-                style: f14RblackLetterSpacing2,
-                  onSubmitted: (value) {  },
+                    }else{
+                       const Text('location must is greater than 3 digit');
+                    }
+                  }),
+                  decoration:const InputDecoration(
+                    hintText:"Search Location...",
+                    border:InputBorder.none,
+                    fillColor:Colors.white,
+                  ),
+                ),
               ),
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Kathmandu',
-                      style: f24Rwhitebold,
+            ),
+          ),
+          const SizedBox(
+            height: 10,
+          ),
+          location.locationModel==null?
+          const SizedBox():
+          Padding(
+            padding: const EdgeInsets.only(left: 15),
+            child: location.isLoading==true
+            ? SizedBox(
+                height: 100.0,
+                child: Shimmer.fromColors(
+                  baseColor:Colors.blue,
+                  highlightColor: Colors.yellow,
+                  child: Container(
+                  margin: const EdgeInsets.all(15.0),
+                  padding: const EdgeInsets.all(3.0),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10.0),
+                    border: Border.all(color: Colors.blueAccent)
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: const [
+                      Text('Loading..')
+                     
+                    ],
+                  ),
+                )
+                ),
+              )
+            : SizedBox(
+              height: 300,
+              child: ListView.builder(
+                itemCount:location.locationModel.length,
+                itemBuilder: ((context, index) {
+                  final locationData = location.locationModel[index];
+                  return Container(
+                    margin: const EdgeInsets.all(15.0),
+                    padding: const EdgeInsets.all(3.0),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10.0),
+                      border: Border.all(color: Colors.blueAccent)
                     ),
-                    height25,
-                    Text(
-                      "desc",
-                      style: f16PW,
-                    ),
-                    height25,
-                    Text(
-                      "10°C",
-                      style: f42Rwhitebold,
-                    ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    Row(
-                      children: const [
-
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(locationData.name.toString()),
+                        TextButton(onPressed: (){
+                          wether.getLocationData(context, location.locationModel[index].lat, location.locationModel[index].lon);
+            
+                        }, child: const Text('CheckWether'))
                       ],
-                    )
-                  ],
-                ),
-              ),
-            ],
+                    ),
+                  );
+              })),
+            ),
           ),
-        ),
-      )
+          const SizedBox(
+            height: 50,
+          ),
+
+          const Padding(
+            padding: EdgeInsets.only(left: 15),
+            child: Text('Wether ForeCast',style: TextStyle(
+              fontSize: 20,color: Colors.black,fontWeight: FontWeight.bold
+            ),),
+          ),
+          const SizedBox(
+            height: 10,
+          ),
+          wether.wetherModel==null?
+          const SizedBox():
+          SizedBox(
+            height: 100, 
+           child: wether.isWetherLoading==true
+            ? const SizedBox(
+              height: 10,
+              child: CircularProgressIndicator(
+                backgroundColor: Colors.red,
+                color: Colors.black,
+              ),
+            )
+            : ListView.builder(
+              itemCount:5,
+              scrollDirection: Axis.horizontal,
+              itemBuilder: ((context, index) {
+                // final wetherData = wether.wetherModel.list[index];
+                return Container(
+                  margin: const EdgeInsets.only(left: 10, top: 0.0, right: 30, bottom: 10),
+                  width: 100,
+                  height: 200,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: const [
+                       BoxShadow(
+                        color: Colors.purple,
+                        blurRadius: 4,
+                        offset: Offset(4, 8), // Shadow position
+                      ),
+                    ],
+                  ),
+                  child: Column(
+
+                  ),
+                );
+            })),
+          )
+        ],
+      ),
     );
   }
 }

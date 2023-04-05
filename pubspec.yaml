@@ -37,20 +37,16 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
   #state management
-  provider: ^6.0.5
+  provider: ^6.0.3
   #Network call
   dio: ^5.1.0
-  #animated search textfield
-  anim_search_bar: ^2.0.3
-  # routing
-  auto_route: ^6.0.5
+  shimmer: ^2.0.0
+  
 
 
 dev_dependencies:
   flutter_test:
-    sdk: flutter
-  auto_route_generator: ^6.0.2                
-  build_runner: ^2.3.3                  
+    sdk: flutter              
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

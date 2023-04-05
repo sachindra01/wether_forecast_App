@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'dio_login_interceptor.dart';
 final dio = Dio(
   BaseOptions(
-    baseUrl: 'http://aeon-culture.api.local.com/',
+    baseUrl: 'https://api.openweathermap.org/',
     headers: <String, String>{
       "Content-Type": "application/json",
       "Accept": "application/json",

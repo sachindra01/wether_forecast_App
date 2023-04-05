@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:wether_app/providers_list/provider_list.dart';
 import 'package:wether_app/view/weather_page.dart';
 
-void main() => runApp(const MyApp());
-
+void main() {
+  runApp(
+    MultiProvider(
+      providers: providers,
+      child: const MyApp(),
+    ),
+  );
+}
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
@@ -10,13 +18,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Weathercast',
-
-      // to hide debug banner
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.green,
       ),
-      home: const WeatherPage(),
+      home: LocationPage(),
     );
   }
 }
